@@ -23,6 +23,6 @@ class WelcomeController extends GetxController {
 
   /// 进入主页
   void onEnterPressed() {
-    Get.offAllNamed('/home'); // 替换为您的主页路由
+    Get.offAllNamed('/login'); // 修改为导航到登录页面
   }
 }

@@ -90,3 +90,8 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  # 添加资源文件配置
+  assets:
+    - assets/icons/wechat.png
+    - assets/icons/apple.png

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../services/auth_service.dart';
 
 class RegisterController extends GetxController {
   final TextEditingController usernameController = TextEditingController();
@@ -11,6 +12,8 @@ class RegisterController extends GetxController {
   final RxBool isPasswordVisible = false.obs;
   final RxBool isConfirmPasswordVisible = false.obs;
   final RxBool isLoading = false.obs;
+
+  final AuthService _authService = AuthService();
 
   @override
   void onClose() {
@@ -35,14 +38,17 @@ class RegisterController extends GetxController {
     try {
       isLoading.value = true;
 
-      // TODO: 调用后端注册接口
-      final response = await _registerUser();
+      final result = await _authService.register(
+        username: usernameController.text.trim(),
+        email: emailController.text.trim(),
+        password: passwordController.text,
+      );
 
-      if (response.success) {
+      if (result['success']) {
         Get.snackbar('成功', '注册成功');
         Get.offAllNamed('/login');
       } else {
-        Get.snackbar('错误', response.message ?? '注册失败，请重试');
+        Get.snackbar('错误', result['message'] ?? '注册失败，请重试');
       }
     } catch (e) {
       Get.snackbar('错误', '注册失败：$e');
@@ -83,20 +89,6 @@ class RegisterController extends GetxController {
     }
 
     return true;
-  }
-
-  // TODO: 实现后端注册接口
-  Future<RegisterResponse> _registerUser() async {
-    // 这里是注册接口的实现
-    // return await ApiService.register({
-    //   'username': usernameController.text,
-    //   'email': emailController.text,
-    //   'password': passwordController.text,
-    // });
-
-    // 临时返回模拟数据
-    await Future.delayed(const Duration(seconds: 1));
-    return RegisterResponse(success: true);
   }
 }
 

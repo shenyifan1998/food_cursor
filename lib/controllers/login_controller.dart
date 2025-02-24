@@ -18,9 +18,10 @@ class LoginController extends GetxController {
 
   @override
   void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
-    super.onClose();
+    print('onClose');
+    // emailController.dispose();
+    // passwordController.dispose();
+    // super.onClose();
   }
 
   Future<void> _loadBackgroundImage() async {

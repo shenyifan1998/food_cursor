@@ -1,99 +1,148 @@
-#java代码规范
-## Instruction to developer: save this file as .cursorrules and place it on the root project directory
-
-AI Persona：
-
-You are an experienced Senior Java Developer, You always adhere to SOLID principles, DRY principles, KISS principles and YAGNI principles. You always follow OWASP best practices. You always break task down to smallest units and approach to solve any task in step by step manner.
-
-Technology stack：
-
-Framework: Java Spring Boot  Maven with Java 1.89 Dependencies: Spring Web, Spring Data JPA, Thymeleaf, Lombok, PostgreSQL driver
-
-Application Logic Design：
-
-1. All request and response handling must be done only in RestController.
-2. All database operation logic must be done in ServiceImpl classes, which must use methods provided by Repositories.
-3. RestControllers cannot autowire Repositories directly unless absolutely beneficial to do so.
-4. ServiceImpl classes cannot query the database directly and must use Repositories methods, unless absolutely necessary.
-5. Data carrying between RestControllers and serviceImpl classes, and vice versa, must be done only using DTOs.
-6. Entity classes must be used only to carry data out of database query executions.
-
-Entities
-
-1. Must annotate entity classes with @Entity.
-2. Must annotate entity classes with @Data (from Lombok), unless specified in a prompt otherwise.
-3. Must annotate entity ID with @Id and @GeneratedValue(strategy=GenerationType.IDENTITY).
-4. Must use FetchType.LAZY for relationships, unless specified in a prompt otherwise.
-5. Annotate entity properties properly according to best practices, e.g., @Size, @NotEmpty, @Email, etc.
-
-Repository (DAO):
-
-1. Must annotate repository classes with @Repository.
-2. Repository classes must be of type interface.
-3. Must extend JpaRepository with the entity and entity ID as parameters, unless specified in a prompt otherwise.
-4. Must use JPQL for all @Query type methods, unless specified in a prompt otherwise.
-5. Must use @EntityGraph(attributePaths={"relatedEntity"}) in relationship queries to avoid the N+1 problem.
-6. Must use a DTO as The data container for multi-join queries with @Query.
-
-Database:
-
-1. Must use mysql:8 as the database. mysql in the native docker container must be used
-2. Must use redis:latest as the cache. redis in the native docker container must be used
-docker ps Output content
-CONTAINER ID   IMAGE     COMMAND                   CREATED         STATUS        PORTS                               NAMES
-479e7a324047   mysql:8   "docker-entrypoint.s…"   15 months ago   Up 27 hours   0.0.0.0:3306->3306/tcp, 33060/tcp   mysql
-0b26e30759ec   redis     "docker-entrypoint.s…"   16 months ago   Up 27 hours   0.0.0.0:6379->6379/tcp              redis-test
+# java 基本原则
+如需执行命令，请不要结束对话，等待我来执行命令后，然后查看终端反馈，并根据详细内容继续解决问题。
+数据库使用mysql，并在docker中正在运行。
+数据库表名使用小写，单词之间使用下划线分隔。
+数据库用户为root，密码为123456
+非关系型数据库使用redis，并在docker中正在运行。
+redis端口为6379,无密码
+这是docker ps 的输出
+~/Desktop/testPython/hello_flutter » docker ps                                                                                                                                             shenyifan@shyfdeMacBook-Air
+CONTAINER ID   IMAGE     COMMAND                   CREATED         STATUS       PORTS                               NAMES
+479e7a324047   mysql:8   "docker-entrypoint.s…"   15 months ago   Up 7 weeks   0.0.0.0:3306->3306/tcp, 33060/tcp   mysql
+0b26e30759ec   redis     "docker-entrypoint.s…"   15 months ago   Up 7 weeks   0.0.0.0:6379->6379/tcp              redis-test
 
 
+关于Java 编程、Spring Boot、Spring 框架、Maven、JUnit 以及相关 Java 技术方面的专家。
+代码风格与结构
+- 编写清晰、高效且文档详尽的 Java 代码，并提供准确的 Spring Boot 示例。
+- 在整个代码中遵循 Spring Boot 的最佳实践和约定。
+- 在创建 Web 服务时实现 RESTful API 设计模式。
+- 使用描述性的方法和变量名，并遵循驼峰命名法。
+- 构建 Spring Boot 应用程序的结构：控制器、服务、存储库、模型、配置。
+Spring Boot 特性
+- 使用 Spring Boot 启动器实现项目的快速设置和依赖管理。
+- 正确使用注解（例如 @SpringBootApplication、@RestController、@Service）。
+- 有效利用 Spring Boot 的自动配置功能。
+- 使用 @ControllerAdvice 和 @ExceptionHandler 实现恰当的异常处理。
+命名约定
+- 类名使用帕斯卡命名法（例如：UserController、OrderService）。
+- 方法和变量名使用驼峰命名法（例如：findUserById、isOrderValid）。
+- 常量使用全部大写（例如：MAX_RETRY_ATTEMPTS、DEFAULT_PAGE_SIZE）。
+Java 和 Spring Boot 的使用
+- 在适用的情况下使用 Java 1.8 （例如，记录、密封类、模式匹配）。
+- 利用 Spring Boot 3.x 的特性及最佳实践。
+- 在适用的情况下使用 Spring Data JPA 进行数据库操作。
+- 使用 Bean Validation 实现恰当的验证（例如，@Valid、自定义验证器）。
+配置与属性
+- 使用 application.properties 或 application.yml 进行配置。
+- 使用 Spring Profiles 实现特定环境的配置。
+- 使用 @ConfigurationProperties 实现类型安全的配置属性。
+依赖注入和控制反转
+- 为了提高可测试性，优先使用构造函数注入而非字段注入。
+- 利用 Spring 的控制反转容器来管理 bean 的生命周期。
+测试
+- 使用 JUnit 5 和 Spring Boot Test 编写单元测试。
+- 使用 MockMvc 对 Web 层进行测试。
+- 使用 @SpringBootTest 实现集成测试。
+- 使用 @DataJpaTest 对存储库层进行测试。
+性能与可扩展性
+- 使用 Spring Cache 抽象实现缓存策略。
+- 使用 @Async 注解进行异步处理，实现非阻塞操作。
+- 实现恰当的数据库索引和查询优化。
+安全
+- 实现 Spring Security 以进行身份验证和授权。
+- 使用适当的密码编码（例如，BCrypt）。
+- 必要时实现跨源资源共享（CORS）配置。
+日志记录与监控
+- 使用 SLF4J 和 Logback 进行日志记录。
+- 实现恰当的日志级别（错误、警告、信息、调试）。
+- 使用 Spring Boot Actuator 进行应用监控和指标收集。
+API 文档
+- 使用 Springdoc OpenAPI（原名 Swagger）生成 API 文档。
+数据访问与对象关系映射
+- 使用 Spring Data JPA 进行数据库操作。
+- 实现恰当的实体关系和级联操作。
+- 使用 Flyway 或 Liquibase 等工具进行数据库迁移。
+构建与部署
+- 使用 Maven 进行依赖管理和构建流程。
+- 为不同的环境（开发、测试、生产）实现适当的配置文件。
+- 如适用，使用 Docker 进行容器化。
+遵循最佳实践，包括：
+- RESTful API 设计（正确使用 HTTP 方法、状态码等）。
+- 微服务架构（如适用）。
+- 使用 Spring 的 @Async 进行异步处理或使用 Spring WebFlux 进行响应式编程。
+在您的 Spring Boot 应用程序设计中，请遵循 SOLID 原则，并保持高内聚和低耦合。
+java方面结束。
+## Dart 一般指南
 
-Service：
+### 基本原则
 
-1. Service classes must be of type interface.
-2. All service class method implementations must be in ServiceImpl classes that implement the service class,
-3. All ServiceImpl classes must be annotated with @Service.
-4. All dependencies in ServiceImpl classes must be @Autowired without a constructor, unless specified otherwise.
-5. Return objects of ServiceImpl methods should be DTOs, not entity classes, unless absolutely necessary.
-6. For any logic requiring checking the existence of a record, use the corresponding repository method with an appropriate .orElseThrow lambda method.
-7. For any multiple sequential database executions, must use @Transactional or transactionTemplate, whichever is appropriate.
+- 所有代码和文档使用中文。
+- 始终声明每个变量和函数的类型（参数和返回值）。
+  - 避免使用任何类型（any）。
+  - 创建必要的类型。
+- 不要在函数内部留空行。
+- 每个文件只导出一个。
 
-Data Transfer object (DTo)：
+### 命名规范
 
-1. Must be of type record, unless specified in a prompt otherwise.
-2. Must specify a compact canonical constructor to validate input parameter data (not null, blank, etc., as appropriate).
+- 类使用 PascalCase。
+- 变量、函数和方法使用 camelCase。
+- 文件和目录名称使用 underscores_case。
+- 环境变量使用 UPPERCASE。
+  - 避免魔法数字，定义常量。
+- 每个函数以动词开头。
+- 布尔变量使用动词，例如：isLoading、hasError、canDelete 等。
+- 使用完整单词而非缩写，并确保拼写正确。
+  - 除了标准缩写，如 API、URL 等。
+  - 除了众所周知的缩写：
+    - i、j 用于循环
+    - err 用于错误
+    - ctx 用于上下文
+    - req、res、next 用于中间件函数参数
 
-RestController:
+### 函数
 
-1. Must annotate controller classes with @RestController.
-2. Must specify class-level API routes with @RequestMapping, e.g. ("/api/user").
-3. Class methods must use best practice HTTP method annotations, e.g, create = @postMapping("/create"), etc.
-4. All dependencies in class methods must be @Autowired without a constructor, unless specified otherwise.
-5. Methods return objects must be of type Response Entity of type ApiResponse.
-6. All class method logic must be implemented in a try..catch block(s).
-7. Caught errors in catch blocks must be handled by the Custom GlobalExceptionHandler class.
+- 在此上下文中，函数的定义同样适用于方法。
+- 编写短小的函数，功能单一。指令数少于 20 条。
+- 用动词和其他内容命名函数。
+  - 如果返回布尔值，使用 isX 或 hasX、canX 等。
+  - 如果不返回任何内容，使用 executeX 或 saveX 等。
+- 避免嵌套块：
+  - 提前检查并返回。
+  - 提取到工具函数中。
+- 使用高阶函数（map、filter、reduce 等）来避免函数嵌套。
+  - 对于简单函数（少于 3 条指令）使用箭头函数。
+  - 对于非简单函数使用具名函数。
+- 使用默认参数值，而不是检查 null 或 undefined。
+- 通过 RO-RO 减少函数参数：
+  - 使用对象传递多个参数。
+  - 使用对象返回结果。
+  - 为输入参数和输出声明必要的类型。
+- 使用单一的抽象级别。
 
-ApiResponse Class (/ApiResponse.java):
+### 数据
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class ApiResponse<T> {
-  private String result;    // SUCCESS or ERROR
-  private String message;   // success or error message
-  private T data;           // return object from service class, if successful
-}
+- 不要滥用原始类型，将数据封装在复合类型中。
+- 避免在函数中进行数据验证，使用具有内部验证的类。
+- 优先使用不可变数据。
+  - 对于不变的数据使用 readonly。
+  - 对于不变的字面量使用 const。
 
-GlobalExceptionHandler Class (/GlobalExceptionHandler.java)
+### 类
 
-@RestControllerAdvice
-public class GlobalExceptionHandler {
+- 遵循 SOLID 原则。
+- 优先使用组合而非继承。
+- 声明接口以定义契约。
+- 编写小型类，功能单一。
+  - 指令数少于 200。
+  - 公共方法少于 10 个。
+  - 属性少于 10 个。
 
-    public static ResponseEntity<ApiResponse<?>> errorResponseEntity(String message, HttpStatus status) {
-      ApiResponse<?> response = new ApiResponse<>("error", message, null)
-      return new ResponseEntity<>(response, status);
-    }
+### 异常
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<?>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        return new ResponseEntity<>(ApiResponse.error(400, ex.getMessage()), HttpStatus.BAD_REQUEST);
-    }
-}
+- 使用异常处理您不期望的错误。
+- 如果捕获异常，应该是为了：
+  - 修复预期的问题。
+  - 添加上下文。
+  - 否则，使用全局处理程序。

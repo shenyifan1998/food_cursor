@@ -54,6 +54,7 @@ class LoginController extends GetxController {
       return;
     }
     // 实现登录逻辑
+    Get.offAllNamed('/main');
   }
 
   void handleForgotPassword() {

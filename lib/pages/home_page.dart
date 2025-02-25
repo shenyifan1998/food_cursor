@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 import 'package:flutter_swiper_view/flutter_swiper_view.dart';
+import 'select_location_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -17,11 +18,26 @@ class HomePage extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  // 1. 顶部地图信息栏
-                  _buildLocationBar(controller),
+                  // 使用 Stack 来实现悬浮效果
+                  Stack(
+                    children: [
+                      // 轮播图
+                      _buildCarousel(controller),
 
-                  // 2. 轮播图
-                  _buildCarousel(controller),
+                      // 悬浮的地图按钮 - 调整位置和尺寸
+                      Positioned(
+                        top: 48,
+                        left: MediaQuery.of(context).size.width *
+                            0.25, // 左边距为屏幕宽度的1/4
+                        right: MediaQuery.of(context).size.width *
+                            0.25, // 右边距为屏幕宽度的1/4
+                        child: SizedBox(
+                          height: 250 / 8, // 轮播图高度的1/8
+                          child: _buildLocationButton(controller),
+                        ),
+                      ),
+                    ],
+                  ),
 
                   // 3. 用户信息和优惠券入口
                   _buildUserInfoSection(controller),
@@ -40,67 +56,80 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // 1. 顶部地图信息栏
-  Widget _buildLocationBar(HomeController controller) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 48, 16, 8),
-      color: Colors.white,
-      child: Row(
-        children: [
-          const Icon(Icons.location_on, color: Color(0xFF3EB489)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  controller.currentLocation.value,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+  // 修改地图按钮组件样式
+  Widget _buildLocationButton(HomeController controller) {
+    return Material(
+      color: Colors.black.withOpacity(0.6),
+      borderRadius: BorderRadius.circular(24),
+      child: InkWell(
+        onTap: () => Get.to(() => const SelectLocationPage()),
+        borderRadius: BorderRadius.circular(24),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          constraints: const BoxConstraints(minHeight: 32), // 添加最小高度约束
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(
+                Icons.location_on,
+                color: Color(0xFF3EB489),
+                size: 16,
+              ),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Row(
+                  // 将 Column 改为 Row
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        controller.currentLocation.value,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      '${controller.distance.value}km',
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.8),
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
                 ),
-                Text(
-                  '${controller.distance.value}km',
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: Colors.white.withOpacity(0.8),
+                size: 12,
+              ),
+            ],
           ),
-          IconButton(
-            icon: const Icon(Icons.more_horiz),
-            onPressed: () {
-              // 处理更多选项
-            },
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  // 2. 轮播图
+  // 修改轮播图组件，移除上边距
   Widget _buildCarousel(HomeController controller) {
     return Obx(() => controller.imageUrls.isEmpty
         ? const SizedBox(
-            height: 200,
+            height: 250, // 增加高度以适应悬浮按钮
             child: Center(child: CircularProgressIndicator()),
           )
         : SizedBox(
-            height: 200,
+            height: 250, // 增加高度以适应悬浮按钮
             child: Swiper(
               itemBuilder: (context, index) {
-                return Container(
-                  margin: const EdgeInsets.all(5.0),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: Image.network(
-                      controller.imageUrls[index],
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                return Image.network(
+                  controller.imageUrls[index],
+                  fit: BoxFit.cover,
                 );
               },
               itemCount: controller.imageUrls.length,

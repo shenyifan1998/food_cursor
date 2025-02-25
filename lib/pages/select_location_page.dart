@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/select_location_controller.dart';
 import '../models/store.dart';
+import '../pages/city_select_page.dart';
 
 class SelectLocationPage extends StatelessWidget {
   const SelectLocationPage({super.key});
@@ -13,7 +14,17 @@ class SelectLocationPage extends StatelessWidget {
       builder: (controller) {
         return Scaffold(
           appBar: AppBar(
-            title: const Text('选择门店'),
+            title: GestureDetector(
+              onTap: controller.selectCity,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Obx(() => Text(controller.selectedCity.value)),
+                  Icon(Icons.arrow_drop_down),
+                ],
+              ),
+            ),
+            centerTitle: true,
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             actions: [

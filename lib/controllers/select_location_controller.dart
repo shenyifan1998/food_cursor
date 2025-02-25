@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../models/store.dart';
+import '../models/city.dart';
 import '../services/store_service.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../pages/city_select_page.dart';
 
 class SelectLocationController extends GetxController {
   final StoreService _storeService = StoreService();
@@ -36,9 +38,13 @@ class SelectLocationController extends GetxController {
     }
   }
 
-  void selectCity() {
-    // TODO: 实现城市选择功能
-    Get.snackbar('提示', '城市选择功能开发中');
+  void selectCity() async {
+    final result = await Get.to(() => CitySelectPage());
+    if (result != null && result is City) {
+      selectedCity.value = result.name;
+      selectedCityCode.value = result.code;
+      loadStores(); // 重新加载该城市的门店
+    }
   }
 
   void onSearchChanged(String value) {

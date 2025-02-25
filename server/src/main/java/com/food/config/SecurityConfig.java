@@ -36,7 +36,8 @@ public class SecurityConfig {
         // 认证接口
         "/api/auth/**",
         // 门店接口
-        "/api/stores/**"
+        "/api/stores/**",
+        "/api/cities/**"
     };
 
     @Bean

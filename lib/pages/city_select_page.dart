@@ -16,63 +16,103 @@ class CitySelectPage extends StatelessWidget {
         foregroundColor: Colors.black,
         elevation: 0.5,
       ),
-      body: Obx(() => controller.isLoading.value
-          ? const Center(child: CircularProgressIndicator())
-          : Row(
-              children: [
-                // 左侧城市列表
-                Expanded(
-                  child: CustomScrollView(
-                    controller: controller.scrollController,
-                    slivers: [
-                      // 1. 定位城市
-                      SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildSectionTitle('定位'),
-                            _buildLocationCity(),
-                          ],
-                        ),
-                      ),
-                      // 2. 热门城市
-                      SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _buildSectionTitle('热门城市'),
-                            _buildHotCities(),
-                          ],
-                        ),
-                      ),
-                      // 3. 按字母分组的城市列表
-                      SliverList(
-                        delegate: SliverChildBuilderDelegate(
-                          (context, index) {
-                            final group = controller.cityGroups[index];
-                            return Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                _buildSectionTitle(group.letter),
-                                ...group.cities
-                                    .map((city) => _buildCityItem(city)),
-                              ],
-                            );
-                          },
-                          childCount: controller.cityGroups.length,
-                        ),
-                      ),
-                      // 底部填充
-                      const SliverToBoxAdapter(
-                        child: SizedBox(height: 24),
-                      ),
-                    ],
-                  ),
+      body: Column(
+        children: [
+          // 搜索框
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.all(16),
+            child: TextField(
+              controller: controller.searchController,
+              decoration: InputDecoration(
+                hintText: '城市中文名或拼音',
+                prefixIcon: const Icon(Icons.search, color: Color(0xFF999999)),
+                filled: true,
+                fillColor: const Color(0xFFF5F5F5),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide.none,
                 ),
-                // 右侧字母导航栏
-                _buildLetterBar(),
-              ],
-            )),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+            ),
+          ),
+          // 搜索结果或城市列表
+          Expanded(
+            child: Obx(() {
+              if (controller.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              if (controller.isSearching.value) {
+                return ListView.builder(
+                  itemCount: controller.searchResults.length,
+                  itemBuilder: (context, index) {
+                    return _buildCityItem(controller.searchResults[index]);
+                  },
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: CustomScrollView(
+                      controller: controller.scrollController,
+                      slivers: [
+                        // 1. 定位城市
+                        SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('定位'),
+                              _buildLocationCity(),
+                            ],
+                          ),
+                        ),
+                        // 2. 热门城市
+                        SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildSectionTitle('热门城市'),
+                              _buildHotCities(),
+                            ],
+                          ),
+                        ),
+                        // 3. 按字母分组的城市列表
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final group = controller.cityGroups[index];
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  _buildSectionTitle(group.letter),
+                                  ...group.cities
+                                      .map((city) => _buildCityItem(city)),
+                                ],
+                              );
+                            },
+                            childCount: controller.cityGroups.length,
+                          ),
+                        ),
+                        // 底部填充
+                        const SliverToBoxAdapter(
+                          child: SizedBox(height: 24),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _buildLetterBar(),
+                ],
+              );
+            }),
+          ),
+        ],
+      ),
     );
   }
 

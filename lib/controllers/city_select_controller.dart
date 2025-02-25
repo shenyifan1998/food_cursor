@@ -16,11 +16,15 @@ class CitySelectController extends GetxController {
   final cityGroups = <CityGroup>[].obs;
   final scrollController = ScrollController();
   final letterPositions = <String, double>{};
+  final searchController = TextEditingController();
+  final RxList<City> searchResults = <City>[].obs;
+  final RxBool isSearching = false.obs;
 
   @override
   void onInit() {
     super.onInit();
     loadCities();
+    searchController.addListener(_onSearchChanged);
     // 监听滚动，记录每个字母的位置
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _calculateLetterPositions();
@@ -99,8 +103,65 @@ class CitySelectController extends GetxController {
     }
   }
 
+  void _onSearchChanged() {
+    final keyword = searchController.text.trim();
+    if (keyword.isEmpty) {
+      isSearching.value = false;
+      searchResults.clear();
+      return;
+    }
+
+    // 确保输入至少一个完整的汉字或字母才开始搜索
+    if (keyword.length >= 1) {
+      isSearching.value = true;
+      searchResults.value = _searchCities(keyword);
+    }
+  }
+
+  List<City> _searchCities(String keyword) {
+    final List<City> results = [];
+    final String lowercaseKeyword = keyword.toLowerCase();
+
+    // 获取所有城市列表
+    List<City> allCities = [];
+    allCities.addAll(hotCities);
+    for (var group in cityGroups) {
+      allCities.addAll(group.cities);
+    }
+
+    // 按名称和拼音搜索
+    for (var city in allCities) {
+      // 匹配城市名称
+      if (city.name.contains(keyword)) {
+        results.add(city);
+        continue;
+      }
+
+      // 匹配拼音全拼
+      String pinyin = PinyinHelper.getPinyinE(
+        city.name,
+        defPinyin: '',
+        format: PinyinFormat.WITHOUT_TONE,
+      ).toLowerCase();
+      if (pinyin.contains(lowercaseKeyword)) {
+        results.add(city);
+        continue;
+      }
+
+      // 匹配拼音首字母
+      String pinyinInitials =
+          PinyinHelper.getShortPinyin(city.name).toLowerCase();
+      if (pinyinInitials.contains(lowercaseKeyword)) {
+        results.add(city);
+      }
+    }
+
+    return results;
+  }
+
   @override
   void onClose() {
+    searchController.dispose();
     scrollController.dispose();
     super.onClose();
   }

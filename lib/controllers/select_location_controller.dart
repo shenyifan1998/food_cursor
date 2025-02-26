@@ -111,9 +111,14 @@ class SelectLocationController extends GetxController {
     }
   }
 
-  void toggleFavorite() {
+  void toggleFavoriteList() {
     showFavorites.value = !showFavorites.value;
     loadStores(); // 重新加载门店列表
+  }
+
+  void toggleFavorite(Store store) {
+    store.isFavorite.value = !store.isFavorite.value;
+    // TODO: 保存收藏状态到本地存储或服务器
   }
 
   void selectStore(Store store) {

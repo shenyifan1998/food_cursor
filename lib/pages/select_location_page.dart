@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/select_location_controller.dart';
 import '../models/store.dart';
 import '../pages/city_select_page.dart';
+import '../pages/favorite_stores_page.dart';
 
 class SelectLocationPage extends StatelessWidget {
   const SelectLocationPage({super.key});
@@ -28,6 +29,12 @@ class SelectLocationPage extends StatelessWidget {
             backgroundColor: Colors.white,
             foregroundColor: Colors.black,
             elevation: 0.5,
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.favorite_border),
+                onPressed: () => Get.to(() => const FavoriteStoresPage()),
+              ),
+            ],
           ),
           body: Column(
             children: [
@@ -107,13 +114,16 @@ class SelectLocationPage extends StatelessWidget {
                     ),
                   ),
                 ),
-                Text(
-                  '${store.distance}km',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.black54,
-                  ),
-                ),
+                Obx(() => IconButton(
+                      icon: Icon(
+                        store.isFavorite.value
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color:
+                            store.isFavorite.value ? Colors.red : Colors.grey,
+                      ),
+                      onPressed: () => controller.toggleFavorite(store),
+                    )),
               ],
             ),
             const SizedBox(height: 8),

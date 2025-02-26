@@ -1,3 +1,5 @@
+import 'package:get/get.dart';
+
 class Store {
   final int id;
   final String name;
@@ -8,6 +10,7 @@ class Store {
   final bool supportsTakeout;
   final String cityName;
   final String phone;
+  final RxBool isFavorite;
 
   Store({
     required this.id,
@@ -19,7 +22,8 @@ class Store {
     required this.supportsTakeout,
     required this.cityName,
     required this.phone,
-  });
+    bool isFavorite = false,
+  }) : this.isFavorite = isFavorite.obs;
 
   factory Store.fromJson(Map<String, dynamic> json) {
     return Store(

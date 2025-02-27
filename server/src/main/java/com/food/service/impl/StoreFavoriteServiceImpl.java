@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -95,8 +96,14 @@ public class StoreFavoriteServiceImpl implements StoreFavoriteService {
     }
 
     @Override
-    public void setFavoriteStatus(List<Store> stores, Long userId) {
-        List<Long> favoriteStoreIds = favoriteRepository.findStoreIdsByUserId(userId);
+    public void setFavoriteStatus(List<StoreDTO> stores, Long userId) {
+        // 获取用户收藏的所有门店ID
+        Set<Long> favoriteStoreIds = favoriteRepository
+            .findStoreIdsByUserId(userId)
+            .stream()
+            .collect(Collectors.toSet());
+        
+        // 设置每个门店的收藏状态
         stores.forEach(store -> 
             store.setIsFavorite(favoriteStoreIds.contains(store.getId()))
         );

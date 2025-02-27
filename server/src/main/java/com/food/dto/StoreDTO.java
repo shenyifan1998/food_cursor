@@ -14,4 +14,5 @@ public class StoreDTO {
     private Boolean supportsTakeout;
     private String cityName;
     private String phone;
+    private Boolean isFavorite;
 } 

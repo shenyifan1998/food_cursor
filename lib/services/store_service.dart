@@ -5,6 +5,13 @@ import '../models/store.dart';
 class StoreService {
   static const String _baseUrl = 'http://localhost:8080/api/stores';
 
+  Map<String, String> get _headers {
+    return {
+      'Content-Type': 'application/json; charset=UTF-8',
+      'Accept': 'application/json; charset=UTF-8',
+    };
+  }
+
   // 获取附近门店
   Future<List<Store>> getNearbyStores(
       double longitude, double latitude, String cityCode) async {
@@ -38,10 +45,7 @@ class StoreService {
     try {
       final response = await http.get(
         Uri.parse('$_baseUrl/city/$cityCode'),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json; charset=UTF-8',
-        },
+        headers: _headers,
       );
 
       if (response.statusCode == 200) {
@@ -59,39 +63,68 @@ class StoreService {
     }
   }
 
+  // 获取收藏的门店列表
   Future<List<Store>> getFavoriteStores() async {
     try {
-      // TODO: 从服务器获取收藏的门店
-      // 临时返回模拟数据
-      await Future.delayed(const Duration(milliseconds: 500)); // 模拟网络延迟
-      return [
-        Store(
-          id: 1,
-          name: '唐山爱琴海店',
-          address: '河北省唐山市路北区爱琴海购物公园6层F6016',
-          businessHours: '09:30-21:30',
-          distance: 0.5,
-          isOpen: true,
-          supportsTakeout: true,
-          cityName: '唐山市',
-          phone: '0315-12345678',
-          isFavorite: true,
-        ),
-        Store(
-          id: 2,
-          name: '唐山吾悦广场店',
-          address: '河北省唐山市路北区吾悦广场3层306',
-          businessHours: '09:25-23:59',
-          distance: 1.2,
-          isOpen: true,
-          supportsTakeout: true,
-          cityName: '唐山市',
-          phone: '0315-87654321',
-          isFavorite: true,
-        ),
-      ];
+      final response = await http.get(
+        Uri.parse('$_baseUrl/user/favorites'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        if (data['result'] == 'SUCCESS') {
+          return (data['data'] as List)
+              .map((item) => Store.fromJson(item))
+              .toList();
+        }
+      }
+      throw Exception(
+          jsonDecode(utf8.decode(response.bodyBytes))['message'] ?? '获取收藏门店失败');
     } catch (e) {
-      throw Exception('获取收藏门店失败：$e');
+      throw Exception('网络错误: ${e.toString()}');
+    }
+  }
+
+  // 添加收藏
+  Future<void> addFavorite(int storeId) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/$storeId/favorite'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        if (data['result'] != 'SUCCESS') {
+          throw Exception(data['message'] ?? '收藏失败');
+        }
+      } else {
+        throw Exception('收藏失败');
+      }
+    } catch (e) {
+      throw Exception('网络错误: ${e.toString()}');
+    }
+  }
+
+  // 取消收藏
+  Future<void> removeFavorite(int storeId) async {
+    try {
+      final response = await http.delete(
+        Uri.parse('$_baseUrl/$storeId/favorite'),
+        headers: _headers,
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        if (data['result'] != 'SUCCESS') {
+          throw Exception(data['message'] ?? '取消收藏失败');
+        }
+      } else {
+        throw Exception('取消收藏失败');
+      }
+    } catch (e) {
+      throw Exception('网络错误: ${e.toString()}');
     }
   }
 }

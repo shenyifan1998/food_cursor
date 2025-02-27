@@ -30,12 +30,13 @@ class Store {
       id: json['id'],
       name: json['name'] ?? '',
       address: json['address'] ?? '',
-      businessHours: json['businessHours'],
+      businessHours: json['businessHours'] ?? '',
       distance: (json['distance'] as num?)?.toDouble() ?? 0.0,
       isOpen: json['isOpen'] ?? false,
       supportsTakeout: json['supportsTakeout'] ?? false,
       cityName: json['cityName'] ?? '',
       phone: json['phone'] ?? '',
+      isFavorite: json['isFavorite'] ?? false,
     );
   }
 }

@@ -116,9 +116,30 @@ class SelectLocationController extends GetxController {
     loadStores(); // 重新加载门店列表
   }
 
-  void toggleFavorite(Store store) {
-    store.isFavorite.value = !store.isFavorite.value;
-    // TODO: 保存收藏状态到本地存储或服务器
+  void toggleFavorite(Store store) async {
+    try {
+      if (store.isFavorite.value) {
+        await _storeService.removeFavorite(store.id);
+      } else {
+        await _storeService.addFavorite(store.id);
+      }
+      store.isFavorite.value = !store.isFavorite.value;
+    } catch (e) {
+      store.isFavorite.value = !store.isFavorite.value; // 恢复状态
+      Get.snackbar('错误', e.toString());
+    }
+  }
+
+  Future<void> loadFavoriteStores() async {
+    try {
+      isLoading.value = true;
+      final favoriteStores = await _storeService.getFavoriteStores();
+      stores.value = favoriteStores;
+    } catch (e) {
+      Get.snackbar('错误', e.toString());
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void selectStore(Store store) {

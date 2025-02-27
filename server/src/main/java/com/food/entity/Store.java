@@ -3,6 +3,7 @@ package com.food.entity;
 import lombok.Data;
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @Entity
@@ -12,34 +13,27 @@ public class Store {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
     private String address;
 
-    @Column(name = "business_hours", nullable = false, length = 50)
+    @Column(name = "business_hours")
     private String businessHours;
-
-    @Column(nullable = false, precision = 10, scale = 7)
-    private Double latitude;
-
-    @Column(nullable = false, precision = 10, scale = 7)
-    private Double longitude;
 
     @Column(nullable = false)
     private Integer status;
 
-    @Column(name = "supports_takeout", nullable = false)
+    @Column(name = "supports_takeout")
     private Boolean supportsTakeout;
 
-    @Column(name = "city_code", nullable = false, length = 20)
+    @Column(name = "city_code", nullable = false)
     private String cityCode;
 
-    @Column(name = "city_name", nullable = false, length = 50)
+    @Column(name = "city_name", nullable = false)
     private String cityName;
 
-    @Column(length = 20)
     private String phone;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -47,6 +41,12 @@ public class Store {
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Transient
+    private Boolean isFavorite;
+
+    @OneToMany(mappedBy = "store")
+    private List<StoreFavorite> favorites;
 
     @PrePersist
     protected void onCreate() {

@@ -5,6 +5,7 @@ import 'home_page.dart';
 import 'category_page.dart';
 import 'favorite_page.dart';
 import 'profile_page.dart';
+import '../controllers/auth_controller.dart';
 
 class MainPage extends StatelessWidget {
   const MainPage({super.key});
@@ -53,5 +54,28 @@ class MainPage extends StatelessWidget {
         );
       },
     );
+  }
+
+  Widget _buildUserSection() {
+    final authController = Get.find<AuthController>();
+
+    return Obx(() {
+      if (authController.isLoggedIn.value) {
+        return ListTile(
+          leading: const Icon(Icons.person),
+          title: Text('欢迎，${authController.username.value}'),
+          trailing: IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            onPressed: () => authController.logout(),
+          ),
+        );
+      } else {
+        return ListTile(
+          leading: const Icon(Icons.login),
+          title: const Text('登录/注册'),
+          onTap: () => Get.toNamed('/login'),
+        );
+      }
+    });
   }
 }

@@ -1,9 +1,15 @@
 package com.food.entity;
 
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
+/**
+ * 门店收藏实体类
+ */
 @Data
 @Entity
 @Table(name = "store_favorite")
@@ -18,8 +24,13 @@ public class StoreFavorite {
     @Column(name = "store_id", nullable = false)
     private Long storeId;
 
-    @Column(name = "create_time", nullable = false, updatable = false)
-    private LocalDateTime createTime;
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", insertable = false, updatable = false)
@@ -27,6 +38,7 @@ public class StoreFavorite {
 
     @PrePersist
     protected void onCreate() {
-        createTime = LocalDateTime.now();
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 } 

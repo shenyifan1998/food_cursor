@@ -11,9 +11,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 门店收藏服务实现类
+ */
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -21,38 +25,72 @@ public class StoreFavoriteServiceImpl implements StoreFavoriteService {
     private final StoreFavoriteRepository favoriteRepository;
     private final StoreRepository storeRepository;
 
+    /**
+     * 获取用户收藏的门店列表
+     *
+     * @param userId 用户ID
+     * @return 收藏的门店列表
+     */
     @Override
     public List<StoreDTO> getFavoriteStores(Long userId) {
         List<StoreFavorite> favorites = favoriteRepository.findByUserId(userId);
         return favorites.stream()
                 .map(favorite -> {
                     Store store = favorite.getStore();
-                    store.setIsFavorite(true);
-                    return convertToDTO(store);
+                    StoreDTO dto = new StoreDTO();
+                    dto.setId(store.getId());
+                    dto.setName(store.getName());
+                    dto.setAddress(store.getAddress());
+                    dto.setPhone(store.getPhone());
+                    dto.setBusinessHours(store.getBusinessHours());
+//                    dto.setLatitude(store.getLatitude());
+//                    dto.setLongitude(store.getLongitude());
+                    dto.setIsFavorite(true);
+                    return dto;
                 })
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 添加收藏
+     *
+     * @param userId  用户ID
+     * @param storeId 门店ID
+     */
     @Override
     @Transactional
     public void addFavorite(Long userId, Long storeId) {
+        // 检查是否已收藏
         if (favoriteRepository.existsByUserIdAndStoreId(userId, storeId)) {
-            throw new BusinessException("该门店已收藏");
+            throw new BusinessException("已收藏该门店");
         }
 
+        // 检查门店是否存在
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new BusinessException("门店不存在"));
 
+        // 创建收藏记录
         StoreFavorite favorite = new StoreFavorite();
         favorite.setUserId(userId);
-        favorite.setStoreId(storeId);
-        favorite.setStore(store);
+        favorite.setStoreId(store.getId());
+//        favorite.setStore(store);
+        favorite.setCreatedAt(LocalDateTime.now()); // 设置创建时间
+        favorite.setUpdatedAt(LocalDateTime.now()); // 设置更新时间
         favoriteRepository.save(favorite);
     }
 
+    /**
+     * 取消收藏
+     *
+     * @param userId  用户ID
+     * @param storeId 门店ID
+     */
     @Override
     @Transactional
     public void removeFavorite(Long userId, Long storeId) {
+//        StoreFavorite favorite = favoriteRepository.findByUserIdAndStoreId(userId, storeId)
+//                .orElseThrow(() -> new BusinessException("未收藏该门店"));
+//        favoriteRepository.delete(favorite);
         favoriteRepository.deleteByUserIdAndStoreId(userId, storeId);
     }
 

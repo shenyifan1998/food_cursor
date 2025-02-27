@@ -4,6 +4,7 @@ import '../controllers/select_location_controller.dart';
 import '../models/store.dart';
 import '../pages/city_select_page.dart';
 import '../pages/favorite_stores_page.dart';
+import '../controllers/auth_controller.dart';
 
 class SelectLocationPage extends StatelessWidget {
   const SelectLocationPage({super.key});
@@ -163,5 +164,17 @@ class SelectLocationPage extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _toggleFavoriteList() {
+    final authController = Get.find<AuthController>();
+    final controller = Get.find<SelectLocationController>();
+    if (controller.showFavorites.value == false &&
+        !authController.isLoggedIn.value) {
+      // 如果要切换到收藏列表但未登录，则跳转到登录页面
+      Get.toNamed('/login');
+      return;
+    }
+    controller.toggleFavoriteList();
   }
 }

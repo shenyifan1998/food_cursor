@@ -1,14 +1,18 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:get/get.dart';
 import '../models/store.dart';
+import '../controllers/auth_controller.dart';
 
 class StoreService {
   static const String _baseUrl = 'http://localhost:8080/api/stores';
 
   Map<String, String> get _headers {
+    final token = Get.find<AuthController>().token.value;
     return {
       'Content-Type': 'application/json; charset=UTF-8',
       'Accept': 'application/json; charset=UTF-8',
+      if (token.isNotEmpty) 'Authorization': 'Bearer $token',
     };
   }
 
@@ -19,10 +23,7 @@ class StoreService {
       final response = await http.get(
         Uri.parse(
             '$_baseUrl/nearby?longitude=$longitude&latitude=$latitude&cityCode=$cityCode'),
-        headers: {
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json; charset=UTF-8',
-        },
+        headers: _headers,
       );
 
       if (response.statusCode == 200) {

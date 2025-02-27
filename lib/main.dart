@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'controllers/auth_controller.dart';
 import 'pages/welcome_page.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page.dart';
@@ -8,6 +9,7 @@ import 'pages/main_page.dart';
 import 'pages/select_location_page.dart';
 
 void main() {
+  Get.put(AuthController());
   runApp(const MyApp());
 }
 

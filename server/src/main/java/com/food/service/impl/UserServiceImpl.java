@@ -1,12 +1,14 @@
 package com.food.service.impl;
 
+import com.food.config.JwtConfig;
+import com.food.dto.LoginRequest;
+import com.food.dto.LoginResponse;
 import com.food.dto.UserRegisterRequest;
 import com.food.entity.User;
 import com.food.exception.BusinessException;
 import com.food.repository.UserRepository;
 import com.food.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtConfig jwtConfig;
 
     @Override
     @Transactional
@@ -41,10 +44,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Long getCurrentUserId() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByUsername(username)
-                .map(User::getId)
-                .orElseThrow(() -> new BusinessException("用户未登录"));
+    public LoginResponse login(LoginRequest request) {
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElseThrow(() -> new BusinessException("用户名或密码错误"));
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BusinessException("用户名或密码错误");
+        }
+
+        String token = jwtConfig.generateToken(user.getUsername(), user.getId());
+        return new LoginResponse(user.getId(), user.getUsername(), token);
+    }
+
+    @Override
+    public Long getCurrentUserId(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new BusinessException("未登录");
+        }
+        
+        try {
+            return jwtConfig.extractUserId(token.replace("Bearer ", ""));
+        } catch (Exception e) {
+            throw new BusinessException("登录已过期，请重新登录");
+        }
     }
 } 

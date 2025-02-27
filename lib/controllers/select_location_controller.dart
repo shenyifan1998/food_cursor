@@ -88,13 +88,13 @@ class SelectLocationController extends GetxController {
   Future<void> loadStores() async {
     try {
       isLoading.value = true;
-      // 这里使用固定的经纬度作为测试，实际应该使用设备的GPS位置
-      final storeList = await _storeService.getNearbyStores(
-        118.1803500, // 测试用经度
-        39.6331100, // 测试用纬度
-        selectedCityCode.value,
-      );
-      stores.value = storeList;
+      if (showFavorites.value) {
+        await loadFavoriteStores();
+      } else {
+        final cityStores =
+            await _storeService.getStoresByCity(selectedCityCode.value);
+        stores.value = cityStores;
+      }
     } catch (e) {
       Get.snackbar('错误', e.toString());
     } finally {

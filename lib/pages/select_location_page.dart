@@ -97,70 +97,72 @@ class SelectLocationPage extends StatelessWidget {
   }
 
   Widget _buildStoreItem(Store store, SelectLocationController controller) {
-    return InkWell(
-      onTap: () => controller.selectStore(store),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    store.name,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: InkWell(
+        onTap: () => controller.selectStore(store),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      store.name,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                Obx(() => IconButton(
-                      icon: Icon(
-                        store.isFavorite.value
-                            ? Icons.favorite
-                            : Icons.favorite_border,
-                        color:
-                            store.isFavorite.value ? Colors.red : Colors.grey,
-                      ),
-                      onPressed: () => controller.toggleFavorite(store),
-                    )),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              store.address,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black54,
+                  IconButton(
+                    icon: Obx(() => Icon(
+                          store.isFavorite
+                              ? Icons.favorite
+                              : Icons.favorite_border,
+                          color: store.isFavorite ? Colors.red : Colors.grey,
+                        )),
+                    onPressed: () => controller.toggleFavorite(store),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  store.businessHours,
-                  style: const TextStyle(
-                    fontSize: 14,
+              const SizedBox(height: 8),
+              Text(
+                store.address,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Text(
+                    store.businessHours,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black54,
+                    ),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.phone),
+                    onPressed: () => controller.callStore(store),
+                    iconSize: 20,
                     color: Colors.black54,
                   ),
-                ),
-                const Spacer(),
-                IconButton(
-                  icon: const Icon(Icons.phone),
-                  onPressed: () => controller.callStore(store),
-                  iconSize: 20,
-                  color: Colors.black54,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.navigation),
-                  onPressed: () => controller.navigateToStore(store),
-                  iconSize: 20,
-                  color: Colors.black54,
-                ),
-              ],
-            ),
-          ],
+                  IconButton(
+                    icon: const Icon(Icons.navigation),
+                    onPressed: () => controller.navigateToStore(store),
+                    iconSize: 20,
+                    color: Colors.black54,
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

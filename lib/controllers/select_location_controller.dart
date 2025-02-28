@@ -6,6 +6,7 @@ import '../services/store_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../pages/city_select_page.dart';
 import 'package:lpinyin/lpinyin.dart';
+import '../controllers/auth_controller.dart';
 
 class SelectLocationController extends GetxController {
   final StoreService _storeService = StoreService();
@@ -93,6 +94,15 @@ class SelectLocationController extends GetxController {
       } else {
         final cityStores =
             await _storeService.getStoresByCity(selectedCityCode.value);
+        // 获取收藏状态
+        final authController = Get.find<AuthController>();
+        if (authController.isLoggedIn.value) {
+          final favoriteStores = await _storeService.getFavoriteStores();
+          final favoriteIds = favoriteStores.map((s) => s.id).toSet();
+          for (var store in cityStores) {
+            store.isFavorite = favoriteIds.contains(store.id);
+          }
+        }
         stores.value = cityStores;
       }
     } catch (e) {
@@ -116,16 +126,23 @@ class SelectLocationController extends GetxController {
     loadStores(); // 重新加载门店列表
   }
 
-  void toggleFavorite(Store store) async {
+  Future<void> toggleFavorite(Store store) async {
+    final authController = Get.find<AuthController>();
+    if (!authController.isLoggedIn.value) {
+      Get.toNamed('/login');
+      return;
+    }
+
     try {
-      if (store.isFavorite.value) {
+      if (store.isFavorite) {
         await _storeService.removeFavorite(store.id);
+        store.isFavorite = false;
       } else {
         await _storeService.addFavorite(store.id);
+        store.isFavorite = true;
       }
-      store.isFavorite.value = !store.isFavorite.value;
+      stores.refresh(); // 刷新列表
     } catch (e) {
-      store.isFavorite.value = !store.isFavorite.value; // 恢复状态
       Get.snackbar('错误', e.toString());
     }
   }

@@ -9,7 +9,7 @@ public class StoreDTO {
     private String name;
     private String address;
     private String businessHours;
-    private Double distance;  // 计算得出的距离
+//    private Double distance;  // 计算得出的距离
     private Boolean isOpen;   // 根据营业时间和状态判断
     private Boolean supportsTakeout;
     private String cityName;

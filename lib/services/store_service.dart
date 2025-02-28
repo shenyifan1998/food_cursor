@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:developer';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:get/get.dart';
 import '../models/store.dart';
@@ -60,6 +62,7 @@ class StoreService {
       throw Exception(
           jsonDecode(utf8.decode(response.bodyBytes))['message'] ?? '获取门店列表失败');
     } catch (e) {
+      print(e);
       throw Exception('网络错误: ${e.toString()}');
     }
   }
@@ -83,6 +86,7 @@ class StoreService {
       throw Exception(
           jsonDecode(utf8.decode(response.bodyBytes))['message'] ?? '获取收藏门店失败');
     } catch (e) {
+      print(e);
       throw Exception('网络错误: ${e.toString()}');
     }
   }

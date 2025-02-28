@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 class FavoriteStoresController extends GetxController {
   final StoreService _storeService = StoreService();
-  final RxList<Store> favoriteStores = <Store>[].obs;
+  final RxList<Store> stores = <Store>[].obs;
   final RxBool isLoading = false.obs;
 
   @override
@@ -17,8 +17,8 @@ class FavoriteStoresController extends GetxController {
   Future<void> loadFavoriteStores() async {
     try {
       isLoading.value = true;
-      // TODO: 从本地存储或服务器加载收藏的门店
-      favoriteStores.value = await _storeService.getFavoriteStores();
+      final favoriteStores = await _storeService.getFavoriteStores();
+      stores.value = favoriteStores;
     } catch (e) {
       Get.snackbar('错误', e.toString());
     } finally {
@@ -26,10 +26,20 @@ class FavoriteStoresController extends GetxController {
     }
   }
 
+  Future<void> removeFavorite(Store store) async {
+    try {
+      await _storeService.removeFavorite(store.id);
+      stores.remove(store);
+      Get.snackbar('成功', '已取消收藏');
+    } catch (e) {
+      Get.snackbar('错误', e.toString());
+    }
+  }
+
   void toggleFavorite(Store store) {
-    store.isFavorite.value = !store.isFavorite.value;
-    if (!store.isFavorite.value) {
-      favoriteStores.remove(store);
+    store.isFavorite = !store.isFavorite;
+    if (!store.isFavorite) {
+      stores.remove(store);
     }
     // TODO: 保存收藏状态到本地存储或服务器
   }
@@ -39,14 +49,23 @@ class FavoriteStoresController extends GetxController {
   }
 
   Future<void> callStore(Store store) async {
+    if (store.phone?.isEmpty ?? true) {
+      Get.snackbar('错误', '该门店暂无联系电话');
+      return;
+    }
+
     final Uri launchUri = Uri(
       scheme: 'tel',
-      path: store.phone,
+      path: store.phone!,
     );
-    if (await canLaunchUrl(launchUri)) {
-      await launchUrl(launchUri);
-    } else {
-      Get.snackbar('错误', '无法拨打电话：${store.phone}');
+    try {
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      } else {
+        Get.snackbar('错误', '无法拨打电话：${store.phone}');
+      }
+    } catch (e) {
+      Get.snackbar('错误', '拨打电话失败：${e.toString()}');
     }
   }
 

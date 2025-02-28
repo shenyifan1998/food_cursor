@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../controllers/home_controller.dart';
 import 'package:flutter_swiper_view/flutter_swiper_view.dart';
 import 'select_location_page.dart';
+import '../models/store.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -60,54 +61,55 @@ class HomePage extends StatelessWidget {
   Widget _buildLocationButton(HomeController controller) {
     return Material(
       color: Colors.black.withOpacity(0.6),
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(20),
       child: InkWell(
-        onTap: () => Get.to(() => const SelectLocationPage()),
-        borderRadius: BorderRadius.circular(24),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          constraints: const BoxConstraints(minHeight: 32), // 添加最小高度约束
+        onTap: () async {
+          final result = await Get.to(() => const SelectLocationPage());
+          if (result != null && result is Store) {
+            controller.saveSelectedStore(result);
+          }
+        },
+        borderRadius: BorderRadius.circular(20),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Icon(
                 Icons.location_on,
-                color: Color(0xFF3EB489),
+                color: Colors.white,
                 size: 16,
               ),
               const SizedBox(width: 4),
-              Expanded(
-                child: Row(
-                  // 将 Column 改为 Row
-                  mainAxisSize: MainAxisSize.min,
+              Obx(() {
+                final storeName = controller.selectedStoreName.value;
+                final distance = controller.selectedStoreDistance.value;
+                return Row(
                   children: [
-                    Expanded(
-                      child: Text(
-                        controller.currentLocation.value,
+                    Text(
+                      storeName,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                      ),
+                    ),
+                    if (distance.isNotEmpty) ...[
+                      const SizedBox(width: 4),
+                      Text(
+                        distance,
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 12,
-                          fontWeight: FontWeight.bold,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Text(
-                      '${controller.distance.value}km',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.8),
-                        fontSize: 10,
-                      ),
-                    ),
+                    ],
                   ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Colors.white.withOpacity(0.8),
-                size: 12,
+                );
+              }),
+              const Icon(
+                Icons.keyboard_arrow_right,
+                color: Colors.white,
+                size: 16,
               ),
             ],
           ),

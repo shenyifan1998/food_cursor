@@ -10,6 +10,7 @@ class Store {
   final bool supportsTakeout;
   final String cityCode;
   final String cityName;
+  final double? distance; // 添加距离字段
   final RxBool _isFavorite;
 
   Store({
@@ -22,6 +23,7 @@ class Store {
     required this.supportsTakeout,
     required this.cityCode,
     required this.cityName,
+    this.distance, // 可选的距离字段
     bool isFavorite = false,
   }) : _isFavorite = isFavorite.obs;
 
@@ -40,6 +42,7 @@ class Store {
       supportsTakeout: (json['supportsTakeout'] as bool?) ?? false,
       cityCode: (json['cityCode'] as String?) ?? '000000', // 示例JSON无此字段
       cityName: (json['cityName'] as String?) ?? '未知城市',
+      distance: (json['distance'] as num?)?.toDouble(), // 添加距离字段的解析
       isFavorite: (json['isFavorite'] as bool?) ?? false,
     );
   }
@@ -55,6 +58,7 @@ class Store {
       'supportsTakeout': supportsTakeout,
       'cityCode': cityCode,
       'cityName': cityName,
+      'distance': distance,
       'isFavorite': isFavorite,
     };
   }

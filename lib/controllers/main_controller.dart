@@ -4,6 +4,7 @@ import '../pages/home_page.dart';
 import '../pages/order_page.dart';
 import '../pages/cart_page.dart';
 import '../pages/profile_page.dart';
+import '../controllers/order_controller.dart';
 
 class MainController extends GetxController {
   final PageController pageController = PageController();
@@ -23,6 +24,11 @@ class MainController extends GetxController {
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
+  }
+
+  void navigateToOrder(bool isSelfPickup) {
+    currentIndex.value = 1;
+    Get.find<OrderController>().setDeliveryMethod(isSelfPickup);
   }
 
   @override

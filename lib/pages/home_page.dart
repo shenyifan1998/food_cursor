@@ -4,6 +4,7 @@ import '../controllers/home_controller.dart';
 import 'package:flutter_swiper_view/flutter_swiper_view.dart';
 import 'select_location_page.dart';
 import '../models/store.dart';
+import '../controllers/main_controller.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -13,6 +14,7 @@ class HomePage extends StatelessWidget {
     return GetBuilder<HomeController>(
       init: HomeController(),
       builder: (controller) {
+        final MainController mainController = Get.find<MainController>();
         return Scaffold(
           body: RefreshIndicator(
             onRefresh: controller.refreshImages,
@@ -44,7 +46,7 @@ class HomePage extends StatelessWidget {
                   _buildUserInfoSection(controller),
 
                   // 4. 取餐方式
-                  _buildPickupMethods(),
+                  _buildPickupMethods(mainController),
 
                   // 5. 功能区
                   _buildFunctionArea(),
@@ -202,7 +204,7 @@ class HomePage extends StatelessWidget {
   }
 
   // 4. 取餐方式
-  Widget _buildPickupMethods() {
+  Widget _buildPickupMethods(MainController mainController) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -213,7 +215,7 @@ class HomePage extends StatelessWidget {
               title: '到店取餐',
               subtitle: '在线点，到店取',
               onTap: () {
-                // 处理到店取餐
+                mainController.navigateToOrder(true); // 到店自取
               },
             ),
           ),
@@ -224,7 +226,7 @@ class HomePage extends StatelessWidget {
               title: '外卖配送',
               subtitle: '最快30分钟送达',
               onTap: () {
-                // 处理外卖配送
+                mainController.navigateToOrder(false); // 外卖配送
               },
             ),
           ),

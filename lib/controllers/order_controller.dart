@@ -24,6 +24,15 @@ class OrderController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+
+    // 获取路由参数，设置配送方式
+    if (Get.arguments != null && Get.arguments is Map) {
+      final args = Get.arguments as Map;
+      if (args.containsKey('isSelfPickup')) {
+        isSelfPickup.value = args['isSelfPickup'] as bool;
+      }
+    }
+
     loadSelectedStore();
     loadPromotionImages();
     loadMenuList();

@@ -18,115 +18,160 @@ class OrderPage extends StatelessWidget {
             children: [
               // 顶部门店信息栏
               Container(
-                padding: const EdgeInsets.fromLTRB(16, 48, 16, 12),
+                padding: const EdgeInsets.fromLTRB(2, 48, 2, 12),
                 color: Colors.white,
-                child: InkWell(
-                  onTap: () {
-                    // TODO: 跳转到选择门店页面
-                  },
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
+                  children: [
+                    // 门店信息部分
+                    Expanded(
+                      flex: 2,
+                      child: InkWell(
+                        onTap: () {
+                          Get.toNamed('/select-store');
+                        },
+                        child: Row(
                           children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Obx(() => Text(
-                                        controller.storeName.value,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      )),
-                                ),
-                                const Icon(Icons.chevron_right, size: 20),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '距离您2.66km',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Colors.grey[600],
+                            const Icon(Icons.store,
+                                size: 20, color: Colors.blue),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Obx(() => Text(
+                                              controller.storeName.value,
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                            )),
+                                      ),
+                                      const Icon(Icons.chevron_right, size: 18),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '距离您2.66km',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
                       ),
-                      // 提货方式切换
-                      Container(
+                    ),
+
+                    // 提货方式切换
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        height: 36,
                         decoration: BoxDecoration(
-                          color: Colors.blue,
-                          borderRadius: BorderRadius.circular(24),
+                          color: Colors.grey[200],
+                          borderRadius: BorderRadius.circular(18),
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: const Text(
-                                '自取',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            // 自取按钮
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => controller.setDeliveryMethod(true),
+                                child: Obx(() => Container(
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: controller.isSelfPickup.value
+                                            ? Colors.blue
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                      child: Text(
+                                        '自取',
+                                        style: TextStyle(
+                                          color: controller.isSelfPickup.value
+                                              ? Colors.white
+                                              : Colors.grey[700],
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    )),
                               ),
                             ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[200],
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Text(
-                                '外卖',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
+                            // 外卖按钮
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    controller.setDeliveryMethod(false),
+                                child: Obx(() => Container(
+                                      alignment: Alignment.center,
+                                      decoration: BoxDecoration(
+                                        color: !controller.isSelfPickup.value
+                                            ? Colors.blue
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(18),
+                                      ),
+                                      child: Text(
+                                        '外卖',
+                                        style: TextStyle(
+                                          color: !controller.isSelfPickup.value
+                                              ? Colors.white
+                                              : Colors.grey[700],
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    )),
                               ),
                             ),
                           ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
 
-              // 促销信息条
+              // 替换促销信息条为搜索框
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 color: Colors.grey[100],
-                child: Row(
-                  children: [
-                    Text(
-                      '嘿！熬夜搭子套餐，固定折扣，双杯9折',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
+                child: Container(
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: InkWell(
+                    onTap: () {
+                      // 跳转到搜索页面
+                      Get.toNamed('/search');
+                    },
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 12),
+                        Icon(Icons.search, color: Colors.grey[400], size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '搜索商品',
+                          style: TextStyle(
+                            color: Colors.grey[400],
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
                     ),
-                    const Spacer(),
-                    Icon(Icons.chevron_right,
-                        color: Colors.grey[400], size: 18),
-                  ],
+                  ),
                 ),
               ),
 
@@ -228,62 +273,47 @@ class OrderPage extends StatelessWidget {
   Widget _buildLeftSideMenu(OrderController controller) {
     return Container(
       color: Colors.grey[100],
-      child: Obx(() => ListView.builder(
-            controller: controller.menuScrollController,
-            padding: EdgeInsets.zero,
-            itemCount: controller.menuList.length,
-            itemBuilder: (context, index) {
-              final menu = controller.menuList[index];
-              final isSelected = menu.id == controller.selectedMenuId.value;
-              return InkWell(
-                onTap: () => controller.selectMenu(menu.id),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: isSelected ? Colors.white : Colors.grey[100],
-                    border: Border(
-                      left: BorderSide(
-                        color: isSelected ? Colors.blue : Colors.transparent,
-                        width: 3,
+      child: Obx(() => controller.menuList.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : ListView.builder(
+              controller: controller.menuScrollController,
+              padding: EdgeInsets.zero,
+              itemCount: controller.menuList.length,
+              itemBuilder: (context, index) {
+                final menu = controller.menuList[index];
+                final isSelected = menu.id == controller.selectedMenuId.value;
+
+                return InkWell(
+                  onTap: () {
+                    controller.selectMenu(menu.id);
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 16, horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white : Colors.transparent,
+                      border: Border(
+                        left: BorderSide(
+                          color: isSelected ? Colors.blue : Colors.transparent,
+                          width: 4,
+                        ),
                       ),
                     ),
-                  ),
-                  child: Column(
-                    children: [
-                      if (menu.type == 'new')
-                        Container(
-                          width: 50,
-                          height: 50,
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: Image.network(
-                            'https://images.unsplash.com/photo-1505394033641-40c6ad1178d7?w=50&auto=format&fit=crop',
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Icon(Icons.image_not_supported,
-                                  color: Colors.grey[400]);
-                            },
-                          ),
-                        ),
-                      Text(
-                        menu.typeName,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isSelected ? Colors.blue : Colors.black87,
-                          fontWeight:
-                              isSelected ? FontWeight.w600 : FontWeight.normal,
-                        ),
-                        textAlign: TextAlign.center,
+                    child: Text(
+                      menu.typeName,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: isSelected ? Colors.blue : Colors.black87,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
-                    ],
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
-              );
-            },
-          )),
+                );
+              },
+            )),
     );
   }
 
@@ -293,7 +323,7 @@ class OrderPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.no_food, size: 64, color: Colors.grey[400]),
+                Icon(Icons.no_food, size: 48, color: Colors.grey[400]),
                 const SizedBox(height: 16),
                 Text(
                   '暂无商品',
@@ -309,18 +339,18 @@ class OrderPage extends StatelessWidget {
             controller: controller.scrollController,
             padding: const EdgeInsets.all(0),
             itemCount: controller.filteredProducts.length,
-            separatorBuilder: (context, index) => Divider(
-              height: 1,
-              color: Colors.grey[200],
-            ),
+            separatorBuilder: (context, index) => Divider(height: 1),
             itemBuilder: (context, index) {
               final product = controller.filteredProducts[index];
 
-              // 分类标题
-              if (index == 0 || index == 2) {
+              // 如果是第一个商品或者与前一个商品的类型不同，显示分类标题
+              if (index == 0 ||
+                  controller.filteredProducts[index - 1].menuType !=
+                      product.menuType) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // 分类标题
                     Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(16),
@@ -335,7 +365,7 @@ class OrderPage extends StatelessWidget {
                         ),
                       ),
                       child: Text(
-                        index == 0 ? '新品种草' : '三重莓果·晚安杯',
+                        product.name,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,

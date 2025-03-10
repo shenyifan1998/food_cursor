@@ -10,4 +10,6 @@ import java.util.List;
 public interface LeftSideMenuRepository extends JpaRepository<LeftSideMenu, Long> {
     @Query("SELECT l FROM LeftSideMenu l ORDER BY l.orderNum")
     List<LeftSideMenu> findAll();
+
+    List<LeftSideMenu> findByType(String type);
 }

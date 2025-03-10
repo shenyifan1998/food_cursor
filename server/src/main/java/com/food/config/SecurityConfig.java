@@ -38,6 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/api/user/register", "/api/user/login").permitAll()
                 .antMatchers("/api/cities/**", "/api/stores/city/**", "/api/stores/nearby").permitAll()
+                .antMatchers("/api/products/**", "/api/products/city/**", "/api/products/nearby").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

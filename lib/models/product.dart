@@ -22,9 +22,9 @@ class Product {
   factory Product.fromJson(Map<String, dynamic> json) {
     return Product(
       id: json['id'] as int,
-      name: json['name'] as String,
-      description: json['description'] as String,
-      tags: (json['tags'] as List<dynamic>).cast<String>(),
+      name: json['menuName'] as String,
+      description: json['explain'] as String? ?? '',
+      tags: (json['tags'] as List<dynamic>?)?.cast<String>() ?? [],
       originalPrice: (json['originalPrice'] as num).toDouble(),
       discountPrice: (json['discountPrice'] as num).toDouble(),
       imageUrl: json['imageUrl'] as String,

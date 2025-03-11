@@ -4,6 +4,44 @@ import '../controllers/order_controller.dart';
 import 'package:flutter_swiper_view/flutter_swiper_view.dart';
 import '../models/product.dart';
 
+// 将 _SliverHeaderDelegate 类移到顶层
+class _SliverHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double minHeight;
+  final double maxHeight;
+  final Widget child;
+
+  _SliverHeaderDelegate({
+    required this.minHeight,
+    required this.maxHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minHeight;
+
+  @override
+  double get maxExtent => maxHeight;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    // 计算透明度，当标题被推出时逐渐变透明
+    final double opacity = 1.0 - (shrinkOffset / maxExtent).clamp(0.0, 1.0);
+
+    return Opacity(
+      opacity: opacity,
+      child: SizedBox.expand(child: child),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_SliverHeaderDelegate oldDelegate) {
+    return maxHeight != oldDelegate.maxHeight ||
+        minHeight != oldDelegate.minHeight ||
+        child != oldDelegate.child;
+  }
+}
+
 class OrderPage extends StatelessWidget {
   const OrderPage({super.key});
 
@@ -176,64 +214,19 @@ class OrderPage extends StatelessWidget {
               ),
 
               // 轮播图
-              Container(
+              SizedBox(
                 height: 180,
                 width: double.infinity,
                 child: _buildCarousel(controller),
               ),
 
-              // 导航标签
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey[200]!),
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8),
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: Colors.black, width: 2),
-                          ),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            '门店菜单',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    Expanded(
-                      child: Center(
-                        child: Text(
-                          '用券下单',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              // 商品列表区域
+              // 主体内容区域
               Expanded(
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // 左侧菜单
                     SizedBox(
-                      width: 90,
+                      width: 100,
                       child: _buildLeftSideMenu(controller),
                     ),
                     // 右侧商品列表
@@ -273,18 +266,17 @@ class OrderPage extends StatelessWidget {
   Widget _buildLeftSideMenu(OrderController controller) {
     return Container(
       color: Colors.grey[100],
-      child: Obx(() => controller.menuList.isEmpty
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              controller: controller.menuScrollController,
-              padding: EdgeInsets.zero,
-              itemCount: controller.menuList.length,
-              itemBuilder: (context, index) {
-                final menu = controller.menuList[index];
+      child: Obx(() => ListView.builder(
+            controller: controller.menuScrollController,
+            padding: EdgeInsets.zero,
+            itemCount: controller.menuList.length,
+            itemBuilder: (context, index) {
+              final menu = controller.menuList[index];
+              return Obx(() {
                 final isSelected = menu.id == controller.selectedMenuId.value;
-
                 return InkWell(
                   onTap: () {
+                    // 点击时不加载数据，只滚动到对应位置
                     controller.selectMenu(menu.id);
                   },
                   child: Container(
@@ -312,8 +304,9 @@ class OrderPage extends StatelessWidget {
                     ),
                   ),
                 );
-              },
-            )),
+              });
+            },
+          )),
     );
   }
 
@@ -323,7 +316,7 @@ class OrderPage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.no_food, size: 48, color: Colors.grey[400]),
+                Icon(Icons.no_food, size: 64, color: Colors.grey[400]),
                 const SizedBox(height: 16),
                 Text(
                   '暂无商品',
@@ -335,51 +328,95 @@ class OrderPage extends StatelessWidget {
               ],
             ),
           )
-        : ListView.separated(
-            controller: controller.scrollController,
-            padding: const EdgeInsets.all(0),
-            itemCount: controller.filteredProducts.length,
-            separatorBuilder: (context, index) => Divider(height: 1),
-            itemBuilder: (context, index) {
-              final product = controller.filteredProducts[index];
-
-              // 如果是第一个商品或者与前一个商品的类型不同，显示分类标题
-              if (index == 0 ||
-                  controller.filteredProducts[index - 1].menuType !=
-                      product.menuType) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // 分类标题
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[50],
-                        image: const DecorationImage(
-                          image: NetworkImage(
-                            'https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=800&auto=format&fit=crop',
-                          ),
-                          fit: BoxFit.cover,
-                          opacity: 0.7,
-                        ),
-                      ),
-                      child: Text(
-                        product.name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    _buildProductItem(product),
-                  ],
-                );
+        : NotificationListener<ScrollNotification>(
+            onNotification: (ScrollNotification notification) {
+              // 当滚动结束时，检查是否需要更新左侧菜单
+              if (notification is ScrollEndNotification) {
+                controller.onScroll();
               }
-
-              return _buildProductItem(product);
+              return false;
             },
+            child: CustomScrollView(
+              controller: controller.scrollController,
+              slivers: _buildProductSlivers(controller),
+            ),
           ));
+  }
+
+  // 构建产品分组的Sliver列表
+  List<Widget> _buildProductSlivers(OrderController controller) {
+    final slivers = <Widget>[];
+    final products = controller.filteredProducts;
+
+    // 记录当前处理的菜单类型
+    String? currentType;
+    // 记录当前类型的产品索引范围
+    int startIndex = 0;
+
+    // 遍历所有产品，按类型分组
+    for (int i = 0; i <= products.length; i++) {
+      // 如果到达列表末尾或者遇到新的菜单类型
+      if (i == products.length ||
+          (i > 0 && products[i].menuType != currentType)) {
+        // 如果有当前类型的产品，则添加该类型的标题和产品列表
+        if (currentType != null) {
+          // 添加固定的分类标题
+          slivers.add(
+            SliverPersistentHeader(
+              pinned: true, // 固定在顶部
+              floating: true, // 允许浮动，这样当新标题出现时，旧标题会被推出
+              delegate: _SliverHeaderDelegate(
+                minHeight: 40, // 减小高度，避免过多空白
+                maxHeight: 40,
+                child: Container(
+                  color: Colors.white, // 使用白色背景，更符合设计
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16), // 只保留水平内边距
+                  alignment: Alignment.centerLeft, // 确保文字垂直居中
+                  child: Text(
+                    _getCategoryTitle(currentType),
+                    style: const TextStyle(
+                      fontSize: 16, // 稍微减小字体大小
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+
+          // 添加该类型的产品列表
+          slivers.add(
+            SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  return _buildProductItem(products[startIndex + index]);
+                },
+                childCount: i - startIndex,
+              ),
+            ),
+          );
+        }
+
+        // 如果不是列表末尾，更新当前类型和起始索引
+        if (i < products.length) {
+          currentType = products[i].menuType;
+          startIndex = i;
+        }
+      } else if (i == 0) {
+        // 第一个产品，初始化当前类型
+        currentType = products[0].menuType;
+      }
+    }
+
+    // 添加底部空白
+    slivers.add(
+      const SliverToBoxAdapter(
+        child: SizedBox(height: 100),
+      ),
+    );
+
+    return slivers;
   }
 
   Widget _buildProductItem(Product product) {
@@ -460,26 +497,13 @@ class OrderPage extends StatelessWidget {
                 // 价格和添加按钮
                 Row(
                   children: [
-                    Text(
-                      '券后价 ',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.red[400],
-                      ),
-                    ),
+                    // 价格信息
                     Text(
                       '¥${product.discountPrice.toStringAsFixed(1)}',
                       style: TextStyle(
                         fontSize: 18,
                         color: Colors.red[400],
                         fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      ' 起',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.red[400],
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -492,6 +516,7 @@ class OrderPage extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
+                    // 添加按钮
                     Container(
                       width: 28,
                       height: 28,
@@ -513,5 +538,24 @@ class OrderPage extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _getCategoryTitle(String menuType) {
+    switch (menuType) {
+      case 'new':
+        return '新品种草';
+      case 'super':
+        return '超级蔬食';
+      case 'light':
+        return '轻乳茶';
+      case 'signature':
+        return '招牌奶茶';
+      case 'member':
+        return '会员随心配';
+      case 'fresh':
+        return '清爽鲜果茶';
+      default:
+        return '推荐商品';
+    }
   }
 }

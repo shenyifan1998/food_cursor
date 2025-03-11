@@ -20,6 +20,7 @@ class OrderController extends GetxController {
   final RxList<Product> filteredProducts = <Product>[].obs;
   final ScrollController scrollController = ScrollController();
   final ScrollController menuScrollController = ScrollController();
+  final RxString currentVisibleType = ''.obs;
 
   @override
   void onInit() {
@@ -33,14 +34,19 @@ class OrderController extends GetxController {
       }
     }
 
+    // 添加滚动监听器
+    scrollController.addListener(onScroll);
+
     loadSelectedStore();
     loadPromotionImages();
-    loadMenuList();
-    loadProducts();
+
+    // 一次性加载所有数据
+    loadAllData();
   }
 
   @override
   void onClose() {
+    scrollController.removeListener(onScroll);
     scrollController.dispose();
     menuScrollController.dispose();
     super.onClose();
@@ -294,10 +300,180 @@ class OrderController extends GetxController {
         .toList();
   }
 
-  // 修改选择菜单的方法，直接从服务器获取对应类型的商品
+  // 修改滚动监听函数，以更准确地检测当前可见的菜单类型
+  void onScroll() {
+    if (filteredProducts.isEmpty) return;
+
+    // 获取当前滚动位置和视口高度
+    final offset = scrollController.offset;
+    final viewportHeight = scrollController.position.viewportDimension;
+
+    // 计算标题高度和产品项高度
+    const headerHeight = 50.0;
+    const productItemHeight = 132.0; // 根据实际产品项高度调整
+
+    // 当前可见区域的顶部和底部位置
+    final topPosition = offset;
+    final bottomPosition = offset + viewportHeight;
+
+    // 跟踪当前位置所处的菜单类型
+    String? visibleType;
+    double currentPosition = 0;
+    String? previousType;
+
+    // 遍历所有产品，计算每个产品的位置
+    for (int i = 0; i < filteredProducts.length; i++) {
+      final product = filteredProducts[i];
+
+      // 如果是新的菜单类型，添加标题高度
+      if (i == 0 || filteredProducts[i - 1].menuType != product.menuType) {
+        previousType = i > 0 ? filteredProducts[i - 1].menuType : null;
+
+        // 添加标题高度
+        currentPosition += headerHeight;
+
+        // 如果标题在可见区域内
+        if (currentPosition > topPosition && currentPosition < bottomPosition) {
+          visibleType = product.menuType;
+          break;
+        }
+      }
+
+      // 添加产品项高度
+      currentPosition += productItemHeight;
+
+      // 如果产品在可见区域内
+      if (currentPosition > topPosition && currentPosition <= bottomPosition) {
+        visibleType = product.menuType;
+        break;
+      }
+    }
+
+    // 如果没有找到可见类型，且滚动位置接近顶部，使用第一个类型
+    if (visibleType == null &&
+        offset < headerHeight &&
+        filteredProducts.isNotEmpty) {
+      visibleType = filteredProducts[0].menuType;
+    }
+    // 如果仍未找到，且有前一个类型，使用前一个类型
+    else if (visibleType == null && previousType != null) {
+      visibleType = previousType;
+    }
+
+    // 如果找到可见类型且与当前不同，更新菜单选中状态
+    if (visibleType != null && visibleType != currentVisibleType.value) {
+      currentVisibleType.value = visibleType;
+
+      // 查找对应的菜单ID
+      final menuItem =
+          menuList.firstWhereOrNull((menu) => menu.type == visibleType);
+      if (menuItem != null && menuItem.id != selectedMenuId.value) {
+        // 更新选中的菜单ID
+        selectedMenuId.value = menuItem.id;
+
+        // 滚动左侧菜单到可见位置
+        final menuIndex = menuList.indexWhere((menu) => menu.id == menuItem.id);
+        if (menuIndex >= 0) {
+          // 计算目标滚动位置
+          final maxScroll = menuScrollController.position.maxScrollExtent;
+          final targetScroll = menuIndex * 50.0; // 假设每个菜单项高度为50
+
+          // 确保不会滚动超出范围
+          final safeScroll = targetScroll.clamp(0.0, maxScroll);
+
+          // 只有当需要滚动时才执行滚动
+          if ((menuScrollController.offset - safeScroll).abs() > 10) {
+            menuScrollController.animateTo(
+              safeScroll,
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // 一次性加载所有数据
+  Future<void> loadAllData() async {
+    await loadMenuList();
+    await loadAllProducts();
+  }
+
+  // 加载所有商品，不按类型筛选
+  Future<void> loadAllProducts() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:8080/api/products'),
+        headers: {'Content-Type': 'application/json'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(utf8.decode(response.bodyBytes));
+        if (data['result'] == 'SUCCESS') {
+          final List<dynamic> productData = data['data'];
+          products.value =
+              productData.map((item) => Product.fromJson(item)).toList();
+
+          // 按类型对商品进行分组
+          final groupedProducts = <String, List<Product>>{};
+          for (final product in products) {
+            if (!groupedProducts.containsKey(product.menuType)) {
+              groupedProducts[product.menuType] = [];
+            }
+            groupedProducts[product.menuType]!.add(product);
+          }
+
+          // 将分组后的商品按照左侧菜单的顺序排列
+          final allProducts = <Product>[];
+          for (final menu in menuList) {
+            if (groupedProducts.containsKey(menu.type)) {
+              allProducts.addAll(groupedProducts[menu.type]!);
+            }
+          }
+
+          // 更新筛选后的商品列表
+          filteredProducts.value = allProducts;
+
+          // 如果有菜单项，默认选中第一个
+          if (menuList.isNotEmpty) {
+            selectedMenuId.value = menuList[0].id;
+          }
+        }
+      } else {
+        // 使用模拟数据
+        // ...现有的模拟数据代码
+      }
+    } catch (e) {
+      print('加载商品失败: $e');
+      // 使用模拟数据
+      // ...现有的模拟数据代码
+    }
+  }
+
+  // 修改选择菜单的方法，确保滚动到正确位置
   void selectMenu(int menuId) {
+    if (selectedMenuId.value == menuId) return;
+
     selectedMenuId.value = menuId;
     final selectedMenu = menuList.firstWhere((menu) => menu.id == menuId);
-    loadProductsByType(selectedMenu.type);
+
+    // 查找该类型的第一个商品在列表中的位置
+    final index =
+        filteredProducts.indexWhere((p) => p.menuType == selectedMenu.type);
+    if (index >= 0) {
+      // 滚动到该位置，但确保不会超出范围
+      final maxScroll = scrollController.position.maxScrollExtent;
+      final targetScroll = index * 200.0; // 假设每个商品项高度约为200像素
+
+      // 确保不会滚动超出范围
+      final safeScroll = targetScroll.clamp(0.0, maxScroll);
+
+      scrollController.animateTo(
+        safeScroll,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+    }
   }
 }
